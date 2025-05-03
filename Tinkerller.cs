@@ -10,6 +10,7 @@ public class Tinkerller : MonoBehaviour
     int i;
     
     private Vector3 lastPosition;
+    private Vector3 currentPosition;
     private float stuckTimer = 0f;
     private const float STUCK_THRESHOLD = 5.0f;
     private const float POSITION_THRESHOLD = 0.1f;
@@ -27,17 +28,46 @@ public class Tinkerller : MonoBehaviour
         anim = GetComponent<Animator>();
         
         lastPosition = transform.position;
+        currentPosition = transform.position;
     }
     
     void SetGhost()
     {
-        transform.SetPositionAndRotation(new Vector3(posxs[i].To<float>(), posys[i].To<float>(), poszs[i].To<float>()),
-            new Quaternion(rotxs[i].To<float>(), rotys[i].To<float>(), rotzs[i].To<float>(), rotws[i].To<float>()));
+        lastPosition = currentPosition;
+        
+        currentPosition = new Vector3(
+            posxs[i].To<float>(),
+            posys[i].To<float>(),
+            poszs[i].To<float>()
+        );
+        
+        transform.SetPositionAndRotation(
+            currentPosition,
+            new Quaternion(
+                rotxs[i].To<float>(),
+                rotys[i].To<float>(),
+                rotzs[i].To<float>(),
+                rotws[i].To<float>()
+            )
+        );
+        
         transform.Rotate(-90f, 0, 0);
+        
         if (++i >= posxs.Count)
         {
             anim.enabled = false;
             i = 0;
+        }
+        
+        CheckSamePosition();
+    }
+    
+    private void CheckSamePosition()
+    {
+        if (Vector3.Distance(currentPosition, lastPosition) < POSITION_THRESHOLD && i < posxs.Count)
+        {
+            Debug.Log("Position similar to previous one. Jumping to next position.");
+            SetGhost();
         }
     }
     
@@ -47,6 +77,7 @@ public class Tinkerller : MonoBehaviour
         i = 0;
         stuckTimer = 0f;
         lastPosition = transform.position;
+        currentPosition = transform.position;
         SetGhost();
     }
     
@@ -78,7 +109,5 @@ public class Tinkerller : MonoBehaviour
         {
             stuckTimer = 0f;
         }
-        
-        lastPosition = transform.position;
     }
 }
